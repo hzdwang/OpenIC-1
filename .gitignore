@@ -1,0 +1,11 @@
+settings.yml
+.DS_Store
+log/[^.]*
+tmp/[^.]*
+sinatra/log/[^.]*
+sinatra/import/[^.]*
+*.log
+*.err
+*.edi
+*.yml
+ORDERS.*
