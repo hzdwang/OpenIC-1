@@ -9,3 +9,5 @@ sinatra/import/[^.]*
 *.edi
 *.yml
 ORDERS.*
+DESADV.*
+INVOIC.*
