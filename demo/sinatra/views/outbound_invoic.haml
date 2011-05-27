@@ -1,0 +1,11 @@
+%h1 Outbound EDI processing - INVOIC message
+%p
+  Handle outbound INVOIC messages.
+
+%form{:action => "/outbound/invoic", :method => "POST"}
+  %label{:for => "invoice"} 
+    Number of the invoice ():
+  %br
+  %input{:name => "invoice", :type => "text"}
+  %br
+  %input{:type => "submit", :value => "export"}

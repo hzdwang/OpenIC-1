@@ -1,0 +1,8 @@
+source :rubygems
+
+gem 'edi4r'
+gem "edi4r-tdid"
+gem 'haml'
+gem 'ooor'
+gem 'ruby-debug19'
+gem 'sinatra'

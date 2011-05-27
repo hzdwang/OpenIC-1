@@ -1,0 +1,11 @@
+%h1 Outbound EDI processing - DESADV message
+%p
+  Handle outbound DESADV messages.
+
+%form{:action => "/outbound/desadv", :method => "POST"}
+  %label{:for => "sale_order"} 
+    Number of the sale order (SOxxxx):
+  %br
+  %input{:name => "sale_order", :type => "text"}
+  %br
+  %input{:type => "submit", :value => "export"}

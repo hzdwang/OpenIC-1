@@ -1,0 +1,11 @@
+%h1 Inbound EDI processing - ORDERS message
+%p
+  Handle incoming ORDERS messages. This module handles incoming message and creates an OpenERP sale order.
+
+%form{:action => "/inbound/orders", :method => "POST"}
+  %label{:for => "content"} 
+    Paste the contents of the EDI message here:
+  %br
+  %textarea{:name => "content", :cols => "96", :rows => "48"}
+  %br
+  %input{:type => "submit", :value => "Import"}

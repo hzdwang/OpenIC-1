@@ -1,0 +1,30 @@
+%h1 Incoming EDI messages
+
+%p
+  Following table contains all messages handled by the system. 
+
+%table
+  %thead
+    %tr
+      %th Type
+      %th Timestamp
+      %th Filename
+      %th Log
+  %tbody
+    - @files.each do |f|
+      - file = f.split('.')
+      %tr
+        %td= file[0]
+        %td= Time.strptime(file[1],"%Y%m%d%H%M%S").strftime("%Y/%m/%d %H:%M:%S")
+        %td
+          %a{ :href => "/inbound/log/#{f}"}
+            =f
+        %td
+          - if File.exist?("inbound/orders/#{f}.log")
+            %a{ :href => "/inbound/log/#{f}.log"}
+              = "#{f}.log"
+
+%br
+
+%p
+  Following table contains all garbage messages.
