@@ -23,7 +23,7 @@ module Models
 
 end
 
-# mapping #############################################################
+# mapping
 class IOOrder
 
 def initialize
@@ -116,7 +116,7 @@ def import_file
 
 end
 
-# Open ERP ############################################################
+# Open ERP
 def create_orders
 
 # setup connection
