@@ -4,10 +4,12 @@ log/[^.]*
 tmp/[^.]*
 sinatra/log/[^.]*
 sinatra/import/[^.]*
+sinatra/tmp/[^.]*
 *.log
 *.err
 *.edi
 *.yml
+*.tmp
 ORDERS.*
 DESADV.*
 INVOIC.*

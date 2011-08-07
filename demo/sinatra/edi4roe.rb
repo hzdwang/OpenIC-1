@@ -46,6 +46,12 @@ get '/outbound/desadv' do
   haml :outbound_desadv
 end
 
+post '/outbound/desadv' do
+  launcher = OIC::Launcher.new
+  launcher.execute_outbound('EDI', "5400107009992", params['sale_order'], "DESADV")
+  'done'
+end
+
 get '/outbound/invoic' do
   haml :outbound_invoic
 end

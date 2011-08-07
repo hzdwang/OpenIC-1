@@ -1,6 +1,7 @@
 require 'rubygems'
 require 'edi4r'
 require 'edi4r/edifact'
+require "edi4r-tdid"
 require 'ooor'
 require 'yaml'
 require 'ruby-debug'

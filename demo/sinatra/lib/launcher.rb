@@ -35,7 +35,16 @@ class Launcher
     end
   end
   
-  def execute_outbound
+  def execute_outbound(message_type, partner, id, message_sub_type = '')
+    @log.info( 'Outbound ' + message_type )
+    @log.info( 'Identifier : ' + id )
+    case message_type
+      when 'EDI'
+        execute_outbound_edi(id, partner, message_sub_type)
+        @log.info( 'Ended' )
+      else
+        @log.fatal( 'Unknown message type ' + message_type)
+    end
   end
   
   private
@@ -65,6 +74,27 @@ class Launcher
       io.process_file(new_filename, edi_message_log)
     end
   end 
+
+  def execute_outbound_edi(id, partner, message_type)
+    ts = Time.now.utc.strftime("%Y%m%d%H%M%S")
+    @log.info( 'Timestamp: ' + ts )
+    @log.info( 'Receiver: ' + partner )
+    @log.info( 'EDI message type: ' + message_type )
+#   get partner configuration
+    config = @partner_config['EDI'][partner]['OUTBOUND'][message_type]
+    message_directory = config['message_directory']
+    handlers = config['handlers']
+#   create files in message directory
+    filename = message_directory + message_type + '.' + ts
+    edi_message_log = Logger.new(filename + '.log')
+    @log.info( 'Filename: ' + filename )
+#   handle outbound file    
+    handlers.each do |handler|
+      @log.info( 'Handler of message: ' + handler )
+      io = Object::const_get(handler).new()
+      io.process_object(id, filename, edi_message_log)
+    end    
+  end
 
 end
 
