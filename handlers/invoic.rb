@@ -33,6 +33,7 @@ def create_invoic_message(inv, test=false)
   bgm = msg.new_segment('BGM')
   bgm.cC002.d1001 = 380 # Commercial invoice
   bgm.d1004 = inv.number # Invoice Number assigned by document sender (us)
+  bgm.d1225 = '9' # Original
   msg.add(bgm)
   # DTM
   # Msg date/time e.g.: 201108151716 YYYYMMDDhhmm
@@ -84,50 +85,66 @@ def create_invoic_message(inv, test=false)
   # NAD
   # Buyer
   nad = msg.new_segment('NAD')
-  nad.d3035 = "BY"
-  nad.cC082.d3039 = "5454200604004"
+  nad.d3035 = 'BY'
+  nad.cC082.d3039 = '5454200604004'
+  nad.cC082.d3055 = '9'
   msg.add(nad)
   # NAD
   # Supplier
   nad = msg.new_segment('NAD')
-  nad.d3035 = "SU"
-  nad.cC082.d3039 = "5454200604004"
+  nad.d3035 = 'SU'
+  nad.cC082.d3039 = '5454200604004'
+  nad.cC082.d3055 = '9'
   msg.add(nad)
   # RFF
   # VAT number supplier  
   rff = msg.new_segment('RFF')
-  rff.cC506.d1153 = "VA"
-  rff.cC506.d1154 = 'BE0123456789'#inv.reference
+  rff.cC506.d1153 = 'VA'
+  rff.cC506.d1154 = 'BE0123456789'
   msg.add(rff)
   # NAD
   # Delivery Party
   nad = msg.new_segment('NAD')
-  nad.d3035 = "DP"
-  nad.cC082.d3039 = "5454200604004"
+  nad.d3035 = 'DP'
+  nad.cC082.d3039 = '5454200604004'
+  nad.cC082.d3055 = '9'
   msg.add(nad)
   # NAD
   # Invoice party
   nad = msg.new_segment('NAD')
-  nad.d3035 = "IV"
-  nad.cC082.d3039 = "5400107000012"
+  nad.d3035 = 'IV'
+  nad.cC082.d3039 = '5400107000012'
+  nad.cC082.d3055 = '9'
   msg.add(nad)
   # RFF
   # VAT number buyer
   rff = msg.new_segment('RFF')
-  rff.cC506.d1153 = "VA"
+  rff.cC506.d1153 = 'VA'
   rff.cC506.d1154 = 'BE9876543210'#inv.reference
   msg.add(rff)
   # CUX
   cux = msg.new_segment('CUX')
-  cux.cC504.d6347 = 2
-  cux.cC504.d6345 = 'EUR'
-  cux.cC504.d6343 = 4
+  cux.aC504[0].d6347 = 2
+  cux.aC504[0].d6345 = 'EUR'
+  cux.aC504[0].d6343 = 4
   msg.add(cux)  
   
-  p inv.invoice_line
   inv.invoice_line.each do |line|
     p line
   end
+  
+  # UNS
+  # To separate header, detail, and summary sections of a message
+  uns = msg.new_segment('UNS')
+  uns.d0081 = 'S'
+  msg.add(uns)
+  
+  # MOA
+  # total amount including VAT
+  moa = msg.new_segment('MOA')
+  moa.cC516.d5025 = '77'
+  moa.cC516.d5004 = '21824.31'
+  msg.add(moa) 
   
   @ic.add( msg )
   
