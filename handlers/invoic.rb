@@ -133,20 +133,24 @@ def create_invoic_message(inv, test=false)
   cnt = 0
   inv.invoice_line.each do |line|
     
+    #p line.product_id.ean13
+    
+    product = line.product_id
+    
     cnt = cnt + 1
     
     # LIN
     lin = msg.new_segment('LIN')
     lin.d1082 = cnt
-    lin.cC212.d7140 = 'AZERTY'#line.product_id
-    lin.cC212.d7143 = 'EN'
+    lin.cC212.d7140 = product.ean13
+    lin.cC212.d7143 = 'EN' # EAN
     msg.add(lin)  
         
     # PIA
     # Additional product id
     pia = msg.new_segment('PIA')
     pia.d4347 = '1' # additional identification
-    pia.aC212[0].d7140 = 'OUR MATNR'
+    pia.aC212[0].d7140 = product.code # our product id
     pia.aC212[0].d7143 = 'SA'
     msg.add(pia)  
     
@@ -155,49 +159,51 @@ def create_invoic_message(inv, test=false)
     imd = msg.new_segment('IMD')
     imd.d7077 = 'F' # free form
     imd.cC273.d7009 = 'IN'
-    imd.cC273.a7008[0].value = 'OUR MATERIAL Description'
+    imd.cC273.a7008[0].value = product.name # our product description
     msg.add(imd)
     
     # QTY
     # invoiced qty
     qty = msg.new_segment('QTY')
     qty.cC186.d6063 = '47'
-    qty.cC186.d6060 = '160' # qty
+    qty.cC186.d6060 = line.quantity # qty
     msg.add(qty)
 
     # QTY
     # delivered qty
     qty = msg.new_segment('QTY')
     qty.cC186.d6063 = '46'
-    qty.cC186.d6060 = '160' # qty
+    qty.cC186.d6060 = line.quantity # qty
     msg.add(qty)
 
     # MOA
-    # line item amount
+    # line item amount ???
     moa = msg.new_segment('MOA')
     moa.cC516.d5025 = '203' 
-    moa.cC516.d5004 = '123.45' 
+    moa.cC516.d5004 = line.price_subtotal 
     msg.add(moa)    
     
     # PRI
     # price details
     pri = msg.new_segment('PRI')
-    pri.cC509.d5125 = 'AAA' # net price
-    pri.cC509.d5118 = '115.47'
+    pri.cC509.d5125 = 'AAA' # net price ( price/PC ? )
+    pri.cC509.d5118 = line.price_subtotal
     msg.add(pri)
     
     # TAX
-    tax = msg.new_segment('TAX')
-    tax.d5283 = '7'
-    tax.cC241.d5153 = 'VAT'
-    tax.cC243.d5278 = '21.00'
-    msg.add(tax)
+    line.invoice_line_tax_id.each do |line_tax|
+      tax = msg.new_segment('TAX')
+      tax.d5283 = '7'
+      tax.cC241.d5153 = 'VAT'
+      tax.cC243.d5278 = line_tax.amount * 100 # e.g.:21.00
+      msg.add(tax)
+    end
  
     # MOA
     # taxable amount
     moa = msg.new_segment('MOA')
     moa.cC516.d5025 = '125' 
-    moa.cC516.d5004 = '666.45' 
+    moa.cC516.d5004 = line.price_subtotal
     msg.add(moa)
        
   end
