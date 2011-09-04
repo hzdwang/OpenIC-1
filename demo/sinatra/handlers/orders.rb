@@ -25,7 +25,7 @@ module Models
 end
 
 # mapping #############################################################
-class IOOrder
+class OICEdiOrdersHandler
 
 def initialize
   @log_pfx = 'OIC: '
@@ -206,8 +206,8 @@ def create_orders
                                            :name => oe_product.name,  
                                            :product_uom_qty => item.quantity,
                                            :product_uom => oe_uom.id,
-                                           :price_unit => item.unit_price)
-	
+                                           :price_unit => item.unit_price,
+                                           :tax_id => oe_product.taxes_id.map{|tax| tax.id})
     end  
 
   end

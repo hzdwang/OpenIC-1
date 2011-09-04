@@ -3,7 +3,6 @@ require 'yaml'
 require 'fileutils'
 require 'edi4r'
 require 'edi4r/edifact'
-require 'ruby_debug'
 
 module OIC
 
@@ -13,8 +12,8 @@ class Launcher
     dir = './handlers/*'
     Dir.glob(dir) {|file| require file}
 #   redirect stdout/stderr
-    $stdout.reopen( 'oic.log', 'a' )
-    $stderr.reopen( 'oic.err', 'a' )
+    $stdout.reopen( 'log/oic.log', 'a' )
+    $stderr.reopen( 'log/oic.err', 'a' )
     ts = '[' + Time.now.utc.strftime("%Y.%m.%d %H:%M:%S") + ']'
     $stderr.puts ts    
     @log = Logger.new(STDOUT)
@@ -22,7 +21,7 @@ class Launcher
     @partner_config = YAML::load_file( "./config/partners.yml" ) || {}  
   end
   
-  def execute_inbound(message_type, filename)
+  def execute_inbound(message_type, filename, test=false)
     @log.info( 'Inbound ' + message_type )
     @log.info( 'Original filename: ' + filename ) 
     case message_type
@@ -35,12 +34,12 @@ class Launcher
     end
   end
   
-  def execute_outbound(message_type, partner, id, message_sub_type = '')
+  def execute_outbound(message_type, partner, id, message_sub_type = '', test=false)
     @log.info( 'Outbound ' + message_type )
     @log.info( 'Identifier : ' + id )
     case message_type
       when 'EDI'
-        execute_outbound_edi(id, partner, message_sub_type)
+        execute_outbound_edi(id, partner, message_sub_type, test)
         @log.info( 'Ended' )
       else
         @log.fatal( 'Unknown message type ' + message_type)
@@ -56,7 +55,7 @@ class Launcher
     ic = EDI::E::Interchange.peek(File.open(filename))
     sender = ic.header.cS002.d0004
     @log.info( 'Sender: ' + sender )
-    message_type = ic.header.d0026
+    message_type = ic.header.d0026 || 'ORDERS'
     @log.info( 'EDI message type: ' + message_type )
 #   get partner configuration
     config = @partner_config['EDI'][sender]['INBOUND'][message_type]
@@ -75,7 +74,7 @@ class Launcher
     end
   end 
 
-  def execute_outbound_edi(id, partner, message_type)
+  def execute_outbound_edi(id, partner, message_type, test=false)
     ts = Time.now.utc.strftime("%Y%m%d%H%M%S")
     @log.info( 'Timestamp: ' + ts )
     @log.info( 'Receiver: ' + partner )
@@ -92,7 +91,7 @@ class Launcher
     handlers.each do |handler|
       @log.info( 'Handler of message: ' + handler )
       io = Object::const_get(handler).new()
-      io.process_object(id, filename, edi_message_log)
+      io.process_business_object(id, filename, edi_message_log, test)
     end    
   end
 

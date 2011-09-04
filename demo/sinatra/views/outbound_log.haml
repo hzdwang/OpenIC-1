@@ -1,0 +1,25 @@
+%h1 Outgoing EDI messages
+
+%p
+  Following table contains all #{@message_type} messages handled by the system. 
+
+%table
+  %thead
+    %tr
+      %th Type
+      %th Timestamp
+      %th Filename
+      %th Log
+  %tbody
+    - @files.each do |f|
+      - file = f.split('.')
+      %tr
+        %td= file[0]
+        %td= Time.strptime(file[1],"%Y%m%d%H%M%S").strftime("%Y/%m/%d %H:%M:%S")
+        %td
+          %a{ :href => "/outbound/#{@message_type}/log/#{f}"}
+            =f
+        %td
+          - if File.exist?("outbound/#{@message_type}/#{f}.log")
+            %a{ :href => "/outbound/#{@message_type}/log/#{f}.log"}
+              = "#{f}.log"

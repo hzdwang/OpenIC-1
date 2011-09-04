@@ -4,8 +4,12 @@
 
 %form{:action => "/outbound/invoic", :method => "POST"}
   %label{:for => "invoice"} 
-    Number of the invoice ():
+    Number of the invoice ("20xx/xxxx"):
   %br
   %input{:name => "invoice", :type => "text"}
+  %br
+  %input{:type => "checkbox", :name => "test", :value => "true", :checked => false}
+  %label{:for => "test"}
+    test mode?
   %br
   %input{:type => "submit", :value => "export"}

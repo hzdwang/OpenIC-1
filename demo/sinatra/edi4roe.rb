@@ -26,20 +26,7 @@ post '/inbound/orders' do
   end
   launcher = OIC::Launcher.new
   launcher.execute_inbound('EDI', filename)
-  'done'
-end
-
-get '/inbound/log' do
-  Dir.chdir('inbound/orders')
-  @files = Dir.glob('ORDERS*[^.log]')
-  Dir.chdir('../..')
-  haml :inbound_log
-end
-
-get '/inbound/log/:filename' do
-  filename = 'inbound/orders/' + params[:filename]
-  @lines = IO.readlines(filename)
-  haml :print_file
+  redirect '/inbound/orders/log'
 end
 
 get '/outbound/desadv' do
@@ -49,11 +36,33 @@ end
 post '/outbound/desadv' do
   launcher = OIC::Launcher.new
   launcher.execute_outbound('EDI', "5400107009992", params['sale_order'], "DESADV")
-  'done'
+  redirect '/outbound/desadv/log'
 end
 
 get '/outbound/invoic' do
   haml :outbound_invoic
+end
+
+post '/outbound/desadv' do
+  launcher = OIC::Launcher.new
+  launcher.execute_outbound('EDI', "5400107009992", params['invoice'], "INVOIC")
+  redirect '/outbound/invoic/log'
+end
+
+get '/:direction/:message_type/log' do
+  @message_type = params[:message_type]
+  Dir.chdir("#{params[:direction]}/" + @message_type)
+  @files = Dir.glob("#{@message_type.upcase}*[^.log]")
+  Dir.chdir('../..')
+  haml_view = "#{params[:direction]}" + "_log"
+  haml haml_view.to_sym
+  #haml :outbound_log
+end
+
+get '/:direction/:message_type/log/:filename' do
+  filename = "#{params[:direction]}/#{params[:message_type]}/" + params[:filename]
+  @lines = IO.readlines(filename)
+  haml :print_file
 end
 
 # You can see all your app specific information this way.

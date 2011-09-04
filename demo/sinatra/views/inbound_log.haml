@@ -17,11 +17,11 @@
         %td= file[0]
         %td= Time.strptime(file[1],"%Y%m%d%H%M%S").strftime("%Y/%m/%d %H:%M:%S")
         %td
-          %a{ :href => "/inbound/log/#{f}"}
+          %a{ :href => "/inbound/orders/log/#{f}"}
             =f
         %td
           - if File.exist?("inbound/orders/#{f}.log")
-            %a{ :href => "/inbound/log/#{f}.log"}
+            %a{ :href => "/inbound/orders/log/#{f}.log"}
               = "#{f}.log"
 
 %br

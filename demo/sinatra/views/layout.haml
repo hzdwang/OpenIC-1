@@ -40,10 +40,19 @@
         %ul
           %li.first
             %a{ :href => '/inbound/orders' } ORDERS
+            (
+            %a{ :href => '/inbound/orders/log' } log
+            )
           %li
             %a{ :href => '/outbound/desadv' } DESADV
+            (
+            %a{ :href => '/outbound/desadv/log' } log
+            )
           %li.last
             %a{ :href => '/outbound/invoic' } INVOIC
+            (
+            %a{ :href => '/outbound/invoic/log' } log
+            )
       #main
         =yield
       %footer

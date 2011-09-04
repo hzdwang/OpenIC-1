@@ -10,6 +10,6 @@ sinatra/tmp/[^.]*
 *.edi
 *.yml
 *.tmp
-ORDERS.*
-DESADV.*
-INVOIC.*
+ORDERS.*[^.rb]
+DESADV.*[^.rb]
+INVOIC.*[^.rb]
