@@ -163,6 +163,8 @@ def create_invoic_message(inv, test=false)
   msg.add(cux)  
   
   # LINES -------------------------------------------------------------
+  # for calculating totals at the end
+  btw_6, btw_21, recupel = 0.0, 0.0, 0.0
   cnt = 0
   inv.invoice_line.each do |line|
     
@@ -198,21 +200,21 @@ def create_invoic_message(inv, test=false)
     # invoiced qty
     qty = msg.new_segment('QTY')
     qty.cC186.d6063 = '47'
-    qty.cC186.d6060 = line.quantity # qty
+    qty.cC186.d6060 = sprintf("%.2f",line.quantity) # qty
     msg.add(qty)
 
     # QTY
     # delivered qty
     qty = msg.new_segment('QTY')
     qty.cC186.d6063 = '46'
-    qty.cC186.d6060 = line.quantity # qty
+    qty.cC186.d6060 = sprintf("%.2f",line.quantity) # qty
     msg.add(qty)
 
     # MOA
     # line item amount
     moa = msg.new_segment('MOA')
     moa.cC516.d5025 = '203' 
-    moa.cC516.d5004 = line.price_subtotal
+    moa.cC516.d5004 = sprintf("%.2f",line.price_subtotal)
     msg.add(moa)    
     
     # PRI
@@ -222,7 +224,8 @@ def create_invoic_message(inv, test=false)
     #     pri.cC509.d5118 = line.price_unit
     #     msg.add(pri)
     
-    line.invoice_line_tax_id.each do |tax|
+    # CAUTION. Tax lines are sorted on id. This presumes that VAT always comes before recupel. Probably something we need to fix later.
+    line.invoice_line_tax_id.sort_by!{|tax| tax.id}.each do |tax|
       case tax.id
       when 1 # btw 21
         # TAX
@@ -230,15 +233,16 @@ def create_invoic_message(inv, test=false)
         tax.d5283 = '7'
         tax.cC241.d5153 = 'VAT'
         tax.cC243.d5278 = '21.00'
-        tax.cC243.d5305 = 'S'
         msg.add(tax)
 
         # MOA
         # taxable amount
         moa = msg.new_segment('MOA')
         moa.cC516.d5025 = '125' 
-        moa.cC516.d5004 = line.price_unit 
+        moa.cC516.d5004 = sprintf("%.2f",line.price_subtotal)
         msg.add(moa)
+        
+        btw_21 = btw_21 + (line.price_subtotal * 0.21)
       when 5 # recupel 0.05
         # RECUPEL
         # ALC
@@ -259,8 +263,10 @@ def create_invoic_message(inv, test=false)
         # recupel amount
         moa = msg.new_segment('MOA')
         moa.cC516.d5025 = '23' 
-        moa.cC516.d5004 = line.quantity * 0.05 
+        moa.cC516.d5004 = sprintf("%.2f", line.quantity * 0.05)
         msg.add(moa)
+        
+        recupel = recupel + (line.quantity * 0.05)
       end
     end       
   end
@@ -276,22 +282,46 @@ def create_invoic_message(inv, test=false)
   # total amount including VAT
   moa = msg.new_segment('MOA')
   moa.cC516.d5025 = '77'
-  moa.cC516.d5004 = inv.amount_total
+  moa.cC516.d5004 = sprintf("%.2f",inv.amount_total)
   msg.add(moa)
   
   # MOA
   # total taxable amount
   moa = msg.new_segment('MOA')
   moa.cC516.d5025 = '79'
-  moa.cC516.d5004 = inv.amount_untaxed
+  moa.cC516.d5004 = sprintf("%.2f",inv.amount_untaxed)
   msg.add(moa)
   
   # MOA
-  # total tax amount
+  # total vat tax amount
   moa = msg.new_segment('MOA')
-  moa.cC516.d5025 = '125'
-  moa.cC516.d5004 = inv.amount_untaxed
+  moa.cC516.d5025 = '124'
+  moa.cC516.d5004 = sprintf("%.2f",btw_21 + btw_6)
   msg.add(moa)
+  
+  # check if there is recupel
+  unless recupel == 0
+    tax = msg.new_segment('TAX')
+    tax.d5283 = '7'
+    tax.cC241.d5153 = 'VAT'
+    tax.cC243.d5278 = 'E'
+    msg.add(tax)
+    
+    # RECUPEL TOTAL
+    # ALC
+    alc = msg.new_segment('ALC')
+    alc.d5463 = 'C'
+    alc.cC214.d7161 = '013'
+    alc.cC214.a7160[0].value = 'RECUPEL'
+    msg.add(alc)
+    
+    # MOA
+    # recupel amount
+    moa = msg.new_segment('MOA')
+    moa.cC516.d5025 = '23' 
+    moa.cC516.d5004 = recupel
+    msg.add(moa)
+  end
   
   @ic.add( msg )
   
@@ -310,10 +340,9 @@ def process_business_object( object_id, filename, log, test=false)
   end
   @log.info( @log_pfx + 'invoice found with number: ' + inv.number )
   create_invoic_message(inv, test)
-# @ic.validate
+  @ic.validate
   @ic.output_mode=:indented
   File.open(filename, 'w') {|f| f.write(@ic.to_s) } 
-  p @ic.to_s
 end
 
 end

@@ -43,7 +43,7 @@ get '/outbound/invoic' do
   haml :outbound_invoic
 end
 
-post '/outbound/desadv' do
+post '/outbound/invoic' do
   launcher = OIC::Launcher.new
   launcher.execute_outbound('EDI', "5400107009992", params['invoice'], "INVOIC")
   redirect '/outbound/invoic/log'
